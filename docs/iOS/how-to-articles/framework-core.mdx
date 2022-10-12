@@ -1,0 +1,18 @@
+# Framework Core
+
+Framework-core helps to create context and talk with the Smartface IDE in order to get latest changes and initial code. But it does not directly talk with it. It provide delegate to implement after a request has been send from IDE, it delegates to related method. The real implementation done on the SpratIOS or Smartface projects.
+
+## How to build
+
+To build the project, run **ios_build_wrapper.sh** script. After a successful build, there should be a build folder on the project. Open and look inside **build/iOS** for **SMFCoreEmulator.framework** and **SMFCore.framework** folders. These are frameworks output of core project.
+
+After a successful build, we need to move the framework folders to required path on the SpratIOS project. The path is `<project_path>/libs` If you run the SpratIOS Aggregate targets before. You may see the frameworks there. Also, there should be a unix executable file **install_corelibraries**. It basically install the above frameworks from Jenkins.
+
+
+:::info
+If you want to see the logs from core project. Do not forget to build the project on debug mode instead of Release. The default is Release.
+
+The build command can be found on build_ios.sh script. To change the build type;
+- Search for Release keyword and change id to Debug
+:::
+

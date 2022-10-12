@@ -1,0 +1,112 @@
+import Screenshot from '@site/src/components/Screenshot';
+
+# How to Eject Smartface Project Locally & Change JS
+
+Smartface projects ejecting with [Smartface-cli](https://www.npmjs.com/package/smartface) tool. So make sure you have setup the cli correctly. To eject a Smartface project follow below steps:
+
+
+## :blue_book: Instructions
+
+**1.** Make sure you have downloaded latest [Smartface-cli](https://www.npmjs.com/package/smartface) tool on your local machine by running  
+
+```console 
+smfc --version
+```  
+    
+**2.** You will see a message like below:
+
+:::info
+If you are targeting specific version of player before ejecting the project make sure to download the player you want with;
+```console
+smfc use <player_version>
+```
+Or you can specify the channel instead of version like;
+
+```console
+smfc use alpha
+```
+:::
+
+**3.** Clone the project you want to eject
+
+**4.** Go to cloned project directory and make sure to run yarn on **root directory** of the project and **scripts folder** to install dependencies.
+   - To generate Smartface related files, make sure to run `yarn build:transpile` on the root directory of the project.
+
+**5.** Go to project directory on terminal and paste below code.
+   - ```console
+    smfc --projectRoot="./" --task=export:iOS --outputFolder="./smartface_xcode_project" --tempFolder="./smartface_xcode_temp_folder"
+    ```  
+
+If command finishes successfully, you should be seeing a `smartface_xcode_project` folder and Xcode project.
+
+**6.** Go to `smartface_xcode_project/smartfaceiOS` folder and run `pod install` command to install dependencies  
+
+:::caution
+Make sure you have installed cocoapods
+::: 
+
+**7.** After installing the dependencies, you can open the `.xcworkspace` file and start building project with Xcode.
+
+:::note
+If you want to install physical device, make sure you have setup provision profile and certificate correctly.
+:::
+
+
+
+## How to Change JS from Ejected Project
+
+When a Smartface project ejects, it generates Xcode project and put all necessary project related files into it such as Javascript, JSONS, image files etc. An example ejected folder structure can be seen below.
+
+
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/ios/change-js-from-ejected-project.png"></Screenshot>
+
+
+As you can see in the screenshot, all the pages put it here. If you try to open the file, you will see it is encrypted. Since we do want to edit the generated files with Xcode, we need to tell the cli tool to not encrypt files. We can do so by providing a license file with replacing `<LicenseType>Demo</LicenseType>` key to **Demo**. 
+
+:::info
+In order to eject project with specific license file, use `--licenseFile` parameter from smfc cli.
+:::
+
+
+```xml title="Sample license file"
+<ApplicationPackageLicenses>
+    <ApplicationPackageLicense>
+        <CompanyName>Smartface User</CompanyName>
+        <LicenseName>Smartface Playground</LicenseName>
+        <SASVersion>v5.0.0</SASVersion>
+        <CreateDate>05.05.2022 10:15:20</CreateDate>
+        <ExpireDate>04.05.2032 10:15:20</ExpireDate>
+        <LicenseType>Demo</LicenseType>
+        <PackageType>iOS</PackageType>
+        <PackageName>io.smartface.demo</PackageName>
+        <PackageFeatures>
+            <PackageFeature>
+                <FeatureName>Feature</FeatureName>
+                <FeatureValue>Feature</FeatureValue>
+            </PackageFeature>
+        </PackageFeatures>
+        <TripleDESKey>L3PrIDoLp1+QebNwzXjss1XACnB/YFxw+/b5qqe/0DK/auXpt2cV+7hVtH4TxMo9LC47YO+yXo2gSVUewUPcY09Fs/nRkg0yxgZmyoKsLyUuYqoqp5ySAZFyeibx1dxP0lo+YfL+bNbAnX8K/G61LVW652Cz9NDcJsEhO/rEqwM=</TripleDESKey>
+        <SignData></SignData>
+    </ApplicationPackageLicense>
+    <ApplicationPackageLicense>
+        <CompanyName>Smartface User</CompanyName>
+        <LicenseName>Smartface Playground</LicenseName>
+        <SASVersion>v5.0.0</SASVersion>
+        <CreateDate>05.05.2022 10:15:20</CreateDate>
+        <ExpireDate>04.05.2032 10:15:20</ExpireDate>
+        <LicenseType>Demo</LicenseType>
+        <PackageType>iOS</PackageType>
+        <PackageName>io.smartface.demo</PackageName>
+        <PackageFeatures>
+            <PackageFeature>
+                <FeatureName>Feature</FeatureName>
+                <FeatureValue>Feature</FeatureValue>
+            </PackageFeature>
+        </PackageFeatures>
+        <TripleDESKey>L3PrIDoLp1+QebNwzXjss1XACnB/YFxw+/b5qqe/0DK/auXpt2cV+7hVtH4TxMo9LC47YO+yXo2gSVUewUPcY09Fs/nRkg0yxgZmyoKsLyUuYqoqp5ySAZFyeibx1dxP0lo+YfL+bNbAnX8K/G61LVW652Cz9NDcJsEhO/rEqwM=</TripleDESKey>
+        <SignData></SignData>
+    </ApplicationPackageLicense>
+    <TripleDESKeyValue>BmmyAMyB1VtqdOVudGFLqGwDy55oikmg</TripleDESKeyValue>
+</ApplicationPackageLicenses>
+```

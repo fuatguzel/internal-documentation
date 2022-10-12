@@ -1,0 +1,13 @@
+# How to Publish a release based on a channel
+
+Smartface framework use three branches to publish an artifact. The branches are master, pre-release and develop. Feature or Bugs starting the develop on development branch. When it is ready to publish an artifact to the users, Smartface uses AppCircle. Appcircle is a CI & CD tool. 
+
+Appcircle fetches repository branches. These branches can be configured differently in order to publish an artifact. Smartface has different configurations according to branch. When a feature&bug ready to deploy, only you need to publish code to the repository. Appcircle listens newly added commits and starts a build. Sometimes it doesn’t start automatically so it is a good idea to check after a publish.
+
+ 
+
+There isn’t much difference publishing one branch from another. For example when it is time to go beta, you only need to merge development branch and resolve conflicts(if its the case :slightly_smiling_face: ) and you are ready to publish commit to repository so Appcircle can start building.
+
+## How to Bump Version
+
+Version increase can be done how you usually increase versions on Xcode iOS projects. Just open Smartface.xcworkspace project and search the current version you want to bump then change found version informations with the new version.

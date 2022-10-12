@@ -1,0 +1,56 @@
+import Screenshot from "@site/src/components/Screenshot";
+
+# What does SpratIOS.xcodeproject do?
+
+The main reason of SpratIOS project has to separate of concerns principle. The main project Smartface.xcworkspace - does not need to hold all the code requires to build Smartface framework.
+
+The main task of SpratIOS project is to be the bridge between Smartface project to framework-core. It does the task via generating its own framework (iOSPlayer.framework).
+
+There are 4 targets used in the project. But actual target is 2 and the other ones is just make it easier to build and move the framework related path of the project.
+
+- **iOSEmulator** - Static Library
+
+- **iOSPlayer** - Static Library
+
+- **iOSEmulatorFinal** - Aggregate
+
+- **iOSPlayerCombined** - Aggregate
+
+## iOS Emulator
+
+it uses to build the framework to work with Smartface Emulator. Smartface Emulator is an application to work with while developing the Smartface projects.
+
+It is required to build the target **iOSEmulatorFinal** in order to build and run Smartface application via Xcode on Smartface.xcworkspace project.
+
+## iOS Player
+
+It uses to build when a Smartface project ready to eject and run as a native application.
+
+It is required to build the target **iOSPlayerCombined** in order to build and run Smartface application via Xcode on Smartface.xcodeproj project.
+
+
+:::caution
+When a fresh clone is done to local machine. Before working with the emulator project(Smartface.xcworkspace), It requires to build `SpratIOS > iOSPlayerFinal` to run. Because it build the iOSEmulator target and make out of it the framework and move to related path.
+:::
+
+## How Sprat talk to Framework-Core?
+
+While running the above Aggregate targets, there is a Pre-Actions command for Static targets. It does run the below code
+
+### iOSEmulator Target
+
+```console showLineNumbers
+cd "${SOURCE_ROOT}/libs"
+./install_corelibraries -i io.smartface.ios:lib-core-emulator:6.8.2-alpha.3;
+```
+In order to get framework-core project output framework based on the emulator or player.
+
+### iOSPlayer Target
+
+```console showLineNumbers
+cd "${SOURCE_ROOT}/libs"
+./install_corelibraries -i io.smartface.ios:lib-core:6.8.2-alpha.3;
+```
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/ios/how-sprat-talk-to-framework-core.png"></Screenshot>
+

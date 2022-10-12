@@ -1,0 +1,31 @@
+# Getting Started
+
+This article describes how to setup framework iOS project before working on the codebase.
+
+## :blue_book: Instructions
+
+Follow below instructions before starting working on the codebase.
+
+**1.** Make sure you download Xcode 13.1 ( Xcode Releases )
+
+**2.** Clone framework-ios project from Bitbucket
+
+**3.** Download cocoapods dependencies, navigate to releaseProjects directory within downloaded project folder and run pod install.
+
+  - Make sure you setup cocoapods properly. Also it may be helpful to use cocoapods version 1.11.2 for  compatibility with other team members.
+
+**4.** Open SpratIOS.xcodeproj project via xcode and run iOSEmulatorFinal scheme
+
+  - This scheme has custom Run Script which builds related frameworks and move to related directory. 
+
+**5.** After complete above steps, open Smartface.xcworkspace at releaseProjects directory. Select Smartface workspace and “Smartface” scheme and run your physical device. If your run finished successfully, you should be able to see the running emulator on your device.
+
+:::info
+When you clone project to your local machine, framework-core related frameworks won’t be linked. So make sure to follow step 4 carefully. You just need to do fourth step one time while working on the codebase unless until you make changes in framework-core
+
+Framework-core is a another codebase written with c++. It provides helpful objects to run/update emulator instance and expose custom classes via JavascriptCore.
+:::
+
+#### :book: Related Articles
+
+  * [How to upgrade Framework-Core version for iOS](/ios/how-to-articles/how-to-upgrade-framework-core-version-for-ios)

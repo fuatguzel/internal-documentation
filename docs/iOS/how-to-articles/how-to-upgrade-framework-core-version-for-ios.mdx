@@ -1,0 +1,39 @@
+import Screenshot from "@site/src/components/Screenshot";
+
+# How to upgrade Framework-Core version for iOS
+
+Framework-ios use framework-core under the hood. Framework-core is an another project under Smartface workspace on Bitbucket and Jenkins being used for its Continuous integration. You can view the configurations and pipelines at [here](http://ci.smartface.io:8080/view/Core/). Jenkins checks the Bitbucket repository for changes to start a build at certain time intervals. If there is a change it starts a fresh build and if build able to finish successfully in order to use artifacts inside android and iOS projects, it uploads them to nexus. To see the previously uploaded artifacts [click here](https://cd.smartface.io/#browse/browse:smartfacemavensnapshots) and open `io/smartface/iOS/lib-core`.
+
+iOS requires some methods from framework-core in order to run the project. We have custom scripts to install the framework and add to related to inside project. The script name is **install_corelibraries** and it is under the **libs** folder. There is a custom aggregate target to call the script and copy installed framework to related path. It can found inside SpratIOS.xcodeproj > schemes. If you look the schemes, you will see two different aggregate targets called **iOSEmulatorFinal** and **iOSPlayerCombined**. Actually, those targets are not only downloading the framework copying to related path. They also build static libraries iOSPlayer and **iOSEmulator** targets and move them to related to path as well. You can see the difference between the player and emulator domain below of page.
+
+Framework-core version specified manually inside pre-actions for **iOSEmulator** and **iOSPlayer** inside SpratIOS.xcodeproj project. Version can be specified for Alpha, beta and release channels inside related branches. To upgrade version for one of the channel follow below instructions.
+
+## :blue_book: Instructions
+
+**1.** Open SpratIOS.xcodeproj Xcode project from framework-ios repository.
+
+**2.** Select **iOSEmulator** scheme and click “Edit Scheme”
+
+**3.** Expand Build settings area and click “Pre-Actions”. You should be seeing the configurations like below.
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/ios/how-to-upgrade-framework-core-version-for-ios.png"></Screenshot>
+
+**4.** Above screenshot shows the Run Script. At line 3 we call the install_corelibraries script with version. For example, right know we use 6.7.1 version and as a channel it is beta. If you checkout to develop branch you will see the beta channel will be changed to alpha.
+
+:::info
+This configuration must be done for every channel ( Alpha, Beta, Release ).
+:::
+
+### Domain Knowladge
+
+- **Player** ( Static library ): Player runs created objects whenever an archive wanted to export from project.
+
+- **Emulator** ( Static library ): Emulator used while developing the objects by iOS team.
+
+- **Framework-Core:** Common repository used by android and iOS projects. It handles main functionalities. For example JavascriptCore context api implemented in this layer.
+
+- **Framework-iOS:** Custom classes and third party library implementations handled in this layer. Smartface-Emulator inside it.
+
+- **Framework-Android:** Same as iOS.
+
+- **Smartface-Native:** Javascript layer for exposed objects from native side. Inside this layer, objects created and configured to create components.

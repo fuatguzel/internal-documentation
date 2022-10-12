@@ -1,0 +1,69 @@
+# Exposing Objects Through JSContext
+
+Objects are defining inside SMFNative project. Whenever you need to add a dependency or a custom class, declare the objects and expose declared objects inside Procotols.m file.
+
+## How to Define and Expose Objects
+
+There are two requirements when an object wanted expose to Javascript. 
+
+1. Interface requirement - We do this via protocols. Also, it must inherit from JSExport.
+2. The object you want to expose.
+3. Expose the object inside Protocols.m file.
+
+:::info
+To show, how two requirements applied in real life situation, Snackbar object will be used as an example throughout the document.
+:::
+
+Interface definement had been done inside **SMFSnackbarMessageExport** protocol.  Inside below code snippet, ‘show function' declared. Which means, when an instance created from **SMFSnackbarMessage**, there will be show function connected to instance.
+
+```swift showLineNumbers
+@objc public protocol SMFSnackbarMessageExport: JSExport { 
+  func show()
+}
+```
+
+After the interface definement, object can define and conform predefined interface. 
+
+
+```swift showLineNumbers
+@objc(SMFSnackbar)
+@objcMembers
+public class SMFSnackbar: NSObject, SMFSnackbarMessageExport { 
+    public func show() {
+        MDCSnackbarManager.default.show(self.message)
+    }
+}
+```
+
+We need to mark object with some special Objective-C stuff. As you can see above snippet code line 1 and line two.
+
+Finally we can say JSContext to expose the object. To do so, Navigate to Protocols.m file and inside setContext function add below snipped.
+
+```swift showLineNumbers
+context[addPrefixToValue(@"Snackbar")] = [SMFSnackbar class];
+```
+
+It makes `Snackbar` class accessible from Javascript. `addPrefixToValue` only function adds '__SF_' prefix string and make object accessible with it.
+
+:::info
+Some cases you may need to use foundation class and you may want to expand it with extensions. since you don’t create custom object you can not conform interface. then, how can you expose interface? You need to call specially call to expose interface inside Protocols. As a solution, you can take UIFont as reference.
+:::
+
+## How to Access Objects from Javascript
+
+Above we defined the Snackbar object. Let’s create an instance from this object and use the show method. We can do so with;
+
+```js showLineNumbers
+const nativeObject = new __SF_Snackbar();
+```
+
+We created an instance and assigned it to `nativeObject` variable. Now, let’s call show method from created instance. To do so;
+
+```js showLineNumbers
+nativeObject.show();
+```
+
+### Protocols.m
+
+Protocols class creates two static function as **setContext** and **exposeAllSubclass**. First function will be called inside Smartface.xcodeproj > SmartfaceAppDelegate when emulator start the build.
+
