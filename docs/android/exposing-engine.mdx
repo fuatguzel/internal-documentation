@@ -1,0 +1,118 @@
+# Exposing Engine
+
+The purpose of Exposing Engine is enabling use of Java runtime APIs from JavaScript. To achieve this we've tried different architectures. This documentation explains the architecture of Smartface Android version 6.5.0 emulator/player. While mentioning features and restrictions in JavaScript ES5 is taken as basis.
+
+## Introduction
+
+Android applications are (currently) written in Java and run on a VM which is like JVM. When an application runs on Android device there are libraries/codes shipped with application and there are APIs that are shipped with operating system and they're accessible from application.
+Smartface applications are written in JavaScript and run on top of a Smartface runtime which reflects Android runtime. Thus, Smartface developers are able to use runtime APIs from JavaScript. This feature, reflecting Android runtime into Smartface application, is called Native API Access and the module that enables this feature is called Exposing Engine.
+
+## Java & JavaScript Terminology Equivalents
+
+### Class
+Every Java object has a type which is called class, developers are allowed to define their own types by creating new classes. JavaScript doesn't have classes but functions are used for defining new types. 
+
+## Object
+Java and JavaScript both have objects.
+
+## Primitives
+Java and JavaScript both have primitive types. Below table shows [Java primitives](https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html) and corresponding [JavaScripts primitives](https://developer.mozilla.org/en-US/docs/Glossary/Primitive).
+
+| **Java** | **Javascript** |
+|----------|----------------|
+| String   | String         |
+| short    | Number         |
+| int      | Number         |
+| long*    | Number         |
+| float    | Number         |
+| double   | Number         |
+| char     | String         |
+| byte     | Number         |
+| boolean  | Boolean        |
+| -        | Symbol         |
+
+*The signed long has a minimum value of -263 and a maximum value of 263-1. The maximum safe integer in JavaScript (253 - 1) and The minimum safe integer in JavaScript (-(253 - 1)). While converting between long and Number there may be data loss.
+
+## Native API Access Features
+
+When you write Java inside an IDE and use Java compiler, they help you on correcting your mistakes and finding the exact class you want to work with by smart importing them etc. Then your Java code compiles to another thing that VM understands what to do, but you don't. It's not your responsibility anymore to get correct class from runtime and create an instance of it, find matching method and call with parameters, handle exceptions etc. It's compiled and ready to run on VM.
+
+When it comes to Native API Access you should think out of box. The environment you are working is runtime itself. There is no compiler anymore, you're living in the environment. To create an instance you should find class in the environment, get the constructor you want and call it on runtime again. This is achievable thank to reflection in Java.
+
+Below you can find the features you may need to write Java code or more generally use Android APIs with Native API Access.
+
+### Require Class
+
+As you may know Java is an object oriented language so that all functionalities are available with classes. The first thing to start using native apis is getting a class from runtime. This functionality is opened to JavaScript with requireClass function which is available in the global scope. Requiring class is similar to importing class in the Java, even import is not a must in Java it is used everywhere.
+
+```java title="Import class"
+import java.util.ArrayList; // After importing, you can use java.util.ArrayList class as ArrayList in your source code
+```
+
+```javascript title="requireClass"
+var ArrayList = requireClass("java.util.ArrayList");
+```
+
+### Create Instance
+
+After you get native class to JavaScript you may want want to use its static functionalities or create an instance of required class. Creating an instance is same as in Java. 
+
+
+```java title="Create instance in Java" showLineNumbers
+import java.util.ArrayList;
+...
+ArrayList<Object> arrayListInstance = new ArrayList();
+ArrayList<Object> arrayListOtherInstance = new ArrayList(5);
+...
+```
+
+```javascript title="Create instance in JavaScript" showLineNumbers
+var ArrayList = requireClass("java.util.ArrayList");
+...
+var arrayListInstance = new ArrayList();
+var arrayListOtherInstance = new ArrayList(5);
+...
+```
+
+Above examples show how to create ArrayList instances with/without parameters in Java and JavaScript. Java classes may have one or more constructors. In that case engine searches for the correct constructor matching with given parameters.
+
+### Get Property
+
+Java objects presents functionality via their fields and methods, java classes presents functionality via creating instances, static fields, static methods and inner classes. These are different things and there are rules for each of them to define and restrict their usages. 
+
+On the other hand JavaScript objects have properties to store data and provide functionalities. All the components of Java listed above is corresponded to property in JavaScript. Properties even flexible than Java components, such as you can't get an object's method and assign it to another variable, then call it later. This is not possible in Java but in JavaScript.
+
+```java title="Create instance in Java" showLineNumbers
+import java.util.ArrayList;
+...
+ArrayList<Object> arrayListInstance = new ArrayList();
+ 
+arrayListInstance.clear;                    // This line is invalid, since clear is a method it must be called
+ 
+arrayListInstance.add("Hello");
+arrayListInstance.clear();
+...
+```
+
+```javascript title="Create instance in JavaScript" showLineNumbers
+var ArrayList = requireClass("java.util.ArrayList");
+...
+var arrayListInstance = new ArrayList();
+ 
+arrayListInstance.clear;                    // This line is valid
+var clearMethod = arrayListInstance.clear;  // This is an example of getting a property from object
+                                            // Target object is arrayListInstance
+                                            // Requested property's name is clear
+                                            // Returned value is a function
+clearMethod();                              // This call is same as calling arrayListInstance.clear();
+ 
+arrayListInstance.add("Hello");             // Here getting property (add) chained with invoking method
+arrayListInstance.clear();
+...
+```       
+
+### Set Property
+
+Java objects have fields to store data on memory. Unless they're final it is allowed to set/get data to/from fields. This is same for JavaScript with one difference, JavaScript allows setting functions to properties which is not allowed in Java.
+
+Exposing Engine allows setting Java object/class fields from JavaScript, below diagram shows how it's done. 

@@ -1,0 +1,32 @@
+# ProjectJSON
+
+All Smartface projects have project.json file to configure application such as name, version, bundle/package name etc.
+Configurations made in the project.json file are mostly common between Android and iOS. When application started and context created within the Core library, it's Core library's responsibility to read project.json file and inform native about configurations. This is made in the Core library because Framework developed with a logic, which is: application is single code base so Framework should have single logic base ( 😃 ) and that logic developed in the Core library.
+
+## How It's Stored and Updated?
+
+project.json file is stored in the Smartface project's config directory. There are three different scenarios on how device gets it.
+
+### Getting From Dispatcher In Emulator
+
+When a project's QR scanned from emulator application, emulator asks index which is basically project.json file with project files informations included. Core library handles index response and saves it as project.json file to documents.
+Same procedure is applied to update scenario, when user wants to update project inside emulator, emulator asks updated index and if there is a difference, emulator stores updated index as project.json file inside documents.
+
+### Storing Inside Published Application
+
+When a project is published on IDE, project.json file is filled with necessary informations such as project files list, then stored inside application with assets file.
+
+### Getting With RAU
+
+When project is published project.json file is stored inside bundle on iOS and read-only assets folder on Android as mentioned before. Then, if there is a RAU update and user wants to get that update, server sends project.json's updated content in the checkUpdate result. Core library combines updated content and current project.json content and stores new version in the RAU folder of application. This process is similar to Getting From Dispatcher In Emulator.
+
+### Benefits
+
+- Code re-use, project.json file is read and parsed in one place
+- Core uses project.json's files object to understand if a script file exists or not. This is required to make require calls fast
+
+### Problems
+
+- Native codes doesn't read project.json file, whenever an action needed to taken by application, Core library development is necessary
+- Native doesn't know anything about Smartface project until Core library is initiated
+- In Emulator update flow, native is responsible to replace updated files, but project.json is updated from Core library. It may cause confusion.

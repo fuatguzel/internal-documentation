@@ -1,0 +1,91 @@
+# Dispatcher Architecture
+
+- Main
+
+  - ConfigurationService yaratir
+
+  - ConfigurationService’den scripts path’i ali ve settings.json’i okur
+
+  - ConfigurationService’i Settings.json’dan okudugu icerikle gunceller.
+
+  - DispatcherServer yaratir
+
+- WorkspacePaths (settings.json ile ayni schema)
+
+- DispatcherServer (Singleton)
+
+  - ConfigurationService yaratir
+
+  - WebSocketServer yaratir ConfigurationService’den aldigi host ve port bilgileriyle
+
+  - Socket baglantiyla bir pair baglandiginda 
+
+    - Baglanti yapan IDE ise bir DispatcherIDEResolver constructor’dan baglanti yapan WS instance’i parametre olarak gecirerek yaratir.
+
+    - Baglanti yapan Emulator ise bir DispatcherEmulatorResolver constructor’dan baglanti yapan WS instance’i parametre olarak gecirerek yaratir.
+
+    - DispatcherEmulatorResolver’dan log event’ini dinler ve gelen log’u DispatcherIDEResolver uzerinden ide’ye gonderir.
+
+  - Pair’lara heartbeat mesaji gonderir
+
+  - Pair’le baglanti koptugunda ilgili Resolver’i dispose eder
+
+  - DispatcherIDEResolver’i sunar
+
+  - DispatcherEmulatorResolver’lari sunar
+
+- DispatcherEmulatorResolver < Disposable
+
+  - Pair’den bir istek geldiginde onu controller’a gonderirir
+
+  - Pair’den bir istek geldiginde iliskili komutlari calistirarak sonuclarini dondurur
+
+  - Pair’den bir log mesaji geldigin log event’i firlatarak mesaji gonderir.
+
+- DispatcherIDEResolver  < Disposable
+
+  - sendLog methodu araciligiyla gelen mesajlari ide’ye gonderir.
+
+- Command
+
+  - GetFiles
+
+    - Dosyalari isletim sistemi uzerinden okuyup bir dosylari bolerek liste olarak dondurur
+
+  - GetFilesList
+
+    - Dosyalari isletim sistemi uzerinden okuyup bir liste yaratir
+
+    - Pathlerin listesini ConfigurationService’ten alir
+
+- WatchService
+
+  - Cihaza gonderilmesi gereken dosyalari iceren klasorleri dinler
+
+  - Pathleri ConfigurationService’den alir
+
+- ResourceService (Singleton)
+
+  - Bir watch-service instance uzerinden dosya degisimlerini dinler
+
+  - Degisiklikleri FileStore’da kaydeder.
+
+  - Dosyalarin guncel listesini hesaplar ve sunar
+
+  - Son degisikliklerin guncel listesini sunar
+
+  - Bir FileStore yaratir
+
+- ConfigurationService (Singleton)
+
+  - Env-variables okur
+
+  - Settings objesi alir (Settings.json)
+
+  - Guncel dosya ve klasorlerin path’lerini sunar
+
+- FilesStore
+
+  - Dosyalarin listesini tutar
+
+  - Dosya degisimlerinin listesini tutar

@@ -1,0 +1,121 @@
+import Screenshot from "@site/src/components/Screenshot";
+
+# Core Architecture
+
+## Overall Structure
+
+Smartface Framework structure consist from 4 layers. JS Engine and JS Interface layers are fully separated from others. But separating iOS/Android from Smartface Objects/Functions fully is not possible. Actually they are completing each other.
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/core/overall-architecture.png"></Screenshot>
+
+## Target Architecture
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/core/architecture.png"></Screenshot>
+
+## Js Engine
+
+This layer is actually standalone JS Engine layer that we don't have access to touch it. For Android it is Google's V8 library, you can check details [here](https://developers.google.com/v8/), for iOS it's Apple's JavaScriptCore framework. These libraries consist of C/C++ functions/classes for accessing and using Javascript engine.
+
+## JS Interface
+
+There are two different JS engine used in framework. Even tough they are practically doing the same thing the way they are doing is really different. In Smartface Objects/Functions interaction with JS Engine is too much. Every time writing two different code blocks for two different engine is not good at all. At this point JS Interface is useful.
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/core/js-interface-detailed.png"></Screenshot>
+
+This layer gives one interface for JS interactions. In the background for this interface there are two different implementations for JavaScriptCore Framework and V8. These functionalities are basically creating Javascript Objects, creating Javascript Functions, calling Javascript function, converting Javascript value to primitive types etc.
+
+## Smartface Objects and Functions
+
+In Smartface Framework we provide some (UI/Non-UI) objects and functionalities. With UI objects users are able to implement interface of application and control user interactions. Non-UI objects such as XMLHttpRequest provides some handy features needed for mobile application. This layer has these objects' and functionalities' common parts without iOS/Android specific implementations.
+
+All these objects/functions are actually natively written codes. Using JS Interface these are bound to JS Engine.
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/core/smf-object-interaction.png"></Screenshot>
+
+JS Engines accepts only C functions as callbacks, if you want to bind a C function - which matches JS Engine's callback signature - it is straightforward. But you can not bind a C++ class to JS Engine directly. JS Engine doesn't take your class and put it as Javascript class, it has a class definition structure that needs class name, get property callback function, has property callback function, constructor/destuctor callback functions etc. and these callbacks all should be C functions. So in our framework for every Smartface Object bounded to JS has its JS binding callback functions.
+
+## Android/iOS
+
+In this layer native parts of UI objects' implementation is completed with native languages. Since application lifecycle is controlled by this layer entry point of framework is also here. So this layer is responsible from starting framework and stopping it (except crashes :slightly_smiling_face:).
+
+## Core Lifecycle
+
+### Emulator
+
+#### Current Responsibilities
+
+##### Core
+
+- Connect to dispatcher
+- Request file list
+- Save file list to temporary place
+- Check file list diff
+- Request files from dispatcher
+- Handle errors and send to native
+- Forward debug messages between JS engine and dispatcher
+- Dismiss debugger alert dialog when connected to debugger
+- Kill application when stop message arrives
+- Restart application if update is just on project.json
+- Send logs to dispatcher
+
+##### Native
+
+- Read QR code
+- Start core emulator module
+- Stop core emulator module
+- Provide certificate file
+- Save zip file sent by dispatcher
+- Unzip saved file
+- Move file list from temporary to persistent
+- Restart application when file unzipped
+- Show error if there is any
+- Before initializing core, wait until emulator module connects to debugger
+
+## Emulator Architecture
+
+### Overall Architecture
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/core/emulator-overall.png"></Screenshot>
+
+### Successful Emulator Flow
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/core/emulator-successful-flow.png"></Screenshot>
+
+### Events
+
+Almost every UI/Non-UI Smartface Objects built around event-driven architecture, so they emits Javascript callbacks (if there is any) when specified event occurred. So in framework an Event is a C++ object that holds Javascript callback and it can be fired when specified scenario happened. Binding a Javascript function to an event of Smartface Object is done by assigning function to matching event property, such as onPressed for TextButton.
+
+### Binding Functions to Events
+
+Smartface Objects have properties accessible from Javascript for events. Users can get/set Javascript callbacks of an event. Here is an example.
+
+```javascript title="Create Event"
+const myButton = new StyleableButton({
+  text: "Button",
+  onPress: function () {
+    console.log("Button pressed");
+  },
+});
+```
+
+When user binds Javascript callback to an event, in framework an Event object is created. Event instance then added to EventGroup object in SmartfaceObject.
+
+### Firing Events
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/core/fire-event.png"></Screenshot>
+
+### Smartface Objects Detailed
+
+We call UI/Non-UI objects accessible from javascript code, either classes or instances, Smartface Objects. For example TextBox, RepeatBox, WebClient etc. objects are Smartface Objects. Almost every Smartface Object inherited from SpBrParcelable base class. There is a class diagram below shows inheritance diagram for SpBrParcelable.
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/core/smf-object-detailed.png"></Screenshot>
+
+**SpBrObject class**
+
+We can see that for all classes which are available from Javascript, SpBrObject is thought as base class. It holds jsObjectRef and if needed it creates JS object of current class etc., these things made me think that it is base class for all Javascript available objects.
+It is good idea having a base class for Javascript available classes. But it would be better if it has just the functionality of making inherited class a JS available class. So every class inherits from SpBrObject class could be used as JS available class.
+
+**SpRefCounted class**
+
+This class is another base class of JS available classes. Purpose of this class is supporting garbage collection by committing suicide in class when release called and reference count is 0. Since it needs function calls (grab, release) goal is not achieved. In code there are very few places these functions called.
+By using smart pointers correctly, we can achieve this goal. Also there is another approach, mentality is similar to SpRefCounted, having inner Ptr class which counts references in constructor/destructor and when reference count is 0 it destructs object.

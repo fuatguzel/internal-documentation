@@ -1,0 +1,265 @@
+import Screenshot from "@site/src/components/Screenshot";
+
+# News Module
+
+## News Flow
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/smartface-projects/employee-experience/news-flow.png"></Screenshot>
+
+## News Analysis
+
+Bu modül, Employee Experience Uygulamasında yöneticilerin haber ve duyuru oluşturması,
+yayınlaması, sıralaması, kullanıcıların duyuruları mobil uygulama üzerinden listeleme ve
+detaylarını inceleyebilmeleri için geliştirilmektedir.
+
+Bu modül içerisinde,
+**Admin :** Employee Experience Admin Web uygulamasınıkullanma yetkisi olan kişi,
+**Kullanıcı :** Employee Experience Mobil uygulamasınıkullanan kişi olarak tanımlanmıştır.
+**Haber :** Oluşturulan Haber/Duyuru tipindeki gönderileritemsil etmektedir.
+
+# 1.Akış | Web Uygulaması Üzerinden Haber/Duyuru Yönetim Süreci
+
+# 1.1 Haber/Duyuru Oluşturma
+
+Admin, kullanıcı bilgileri ile Admin Web uygulamasına giriş yapar ve **Haber/Duyuru
+Oluşturma Formu** sayfasına gider.
+
+Açılan formda aşağıdaki bilgiler bulunur.
+
+| **Alan**                 | **Tip**                | **Gereklilik**                     |
+|----------------------|--------------------|--------------------------------|
+| Kullanıcı Grupları   | Multiple SelectBox | varsayılan : Tüm kullanıcılar  |
+| Haber Başlığı        | Alphanumeric       | Gerekli                        |
+| Haber özeti          | Alphanumeric       | Gerekli                        |
+| Haber Detayı         | Alphanumeric       | Gerekli                        |
+| Haber Tipi           | SelectBox          | varsayılan : ‘Haber’           |
+| Medya                | Drag/Drop          | Gerekli, en az 1 en fazla 10   |
+| Bildirim Checkbox’u? | checkbox           | Gerekli: default true          |
+| Bildirim Başlığı?    | Alphanumeric       | Gerekli: default Haber başlığı |
+| Bildirim Açıklaması? | Alphanumeric       | Gerekli: default Haber özeti   |
+
+Admin, medya yükleyeceği zaman, medya yükleme field’ındaki ‘+’ ikonuna tıklayarak
+medyayı dosya sisteminden seçebilir veya bilgisayarından sürükle/bırak ile ekleyebilir. Her
+yeni medya eklendiğinde yeni bir ‘+’ ikonu oluşturulur. Aynı zamanda eklenen medyada ‘-’
+ikonuna tıklayarak medyayı silebilir. Medya, fotoğraf veya video olabilir. Videolarda sadece
+‘.mp4’ formatı desteklenir.
+
+Eklenen ilk fotoğraf, varsayılan olarak haberin kapak fotoğrafı seçilir. Kapak fotoğrafının
+hangi fotoğraf olduğunu admin görebilir ve değiştirebilir.
+
+Medya ekleme alanında ‘En fazla 10 adet ekleyebilirsiniz’ uyarısı gözükür. 10 adet eklenmesi
+halinde yeni bir ‘+’ ikonu oluşmaz.
+
+Admin, ‘Oluştur’ butonuna basarak formu submit eder, Submit olmadan önce gerekli
+alanların kontrolü yapılır. Kontrol olumlu ise Haber oluşturulur, varsayılan olarak ilk sıraya
+eklenir ve admin **Haber/Duyuru Listesi** ekranına yönlendirilir,olumsuz ise Admin uyarılarak
+eksik alanlar gösterilir.
+
+Eğer oluşturulan haberin tipi ‘Duyuru’ ise, Formda **bildirim checkbox’ı, bildirim başlığı ve
+bildirim açıklaması** alanları açılır. Admin, gönderilecekbildirimi özelleştirebilir. İlgili kullanıcı
+gruplarına bildirim gönderilir. Bildirim içeriğinde varsayılan olarak haber başlığı ve haber
+özeti bulunur.
+
+# 1.1 Haber/Duyuru Listesi Görüntüleme
+
+Admin, kullanıcı bilgileri ile web uygulamasına giriş yapar ve **Haberler ve Duyurular**
+sayfasına gider.
+
+Sayfa açıldığında, tüm duyurular data table içerisinde listelenir. Data table’da her sayfa,
+varsayılan olarak 10 satırdan oluşur. Satır sayısı değiştirilebilir. Her satır sayısı ve sayfa
+değişikliğinde admin web, api’dan yeni verileri ister.
+
+Liste, adminin önceden güncellemiş olduğu sıralamaya göre gelir.
+
+Listelenecek datatable’da şu veriler bulunur:
+
+| **Alan**                    | **Tip**      |
+|-----------------------------|--------------|
+| Sıralama Değiştirme Butonu  | Button       |
+| Haber Başlığı               | Alphanumeric |
+| Haber Tipi                  | Enum         |
+| Oluşturan kişi              | Alphanumeric |
+| Oluşturulma Tarihi          | Datetime     |
+| Son güncellemeyi yapan kişi | Alphanumeric |
+| Son güncelleme tarihi       | Datetime     |
+| Detay Butonu                | Button       |
+| Sil Butonu                  | Button       |
+
+# 1.2 Haber/Duyuru Listesi Güncelleme
+
+Admin, Listede sıralamasını değiştirmek istediği satıraki **Sıralama Değiştirme Butonu** ‘na
+basılı tutup sürükleyerek veya çıkan textbox’ta sırasını girerek, tablodaki sırasını
+değiştirebilir. Haberin sıralaması değişirse, sayfada ‘ **Güncelle** ’ butonu gözükür.
+
+Admin ‘ **Güncelle** ’ butonuna bastığında, işlem tamamlandıktansonra liste yenilenir.
+
+# 1.3 Haber/Duyuru Güncelleme
+
+Admin listede silmek istediği haberin ‘Sil Butonu’ na tıklar ve karşısına emin olup olmadığını
+soran bir pop-up çıkar. Evet butonuna tıklarsa seçilen duyuru silinir ve liste yenilenir. Silme
+anında Haberin içeriği, veritabanından silinmez.
+
+Yalnızca silinen son 5 haber veri tabanında pasif olarak tutulur. Yeni bir silinen haber geldiği
+zaman en eski silinen haber, kalıcı olarak silinir.
+
+Admin, listede detayını görmek istediği haberin ‘ **DetayButonu** ’ na tıklar ve **Güncelleme
+Ekranı** na yönlendirilir. Burada, **Haber/Duyuru OluşturmaFormu** dolu olarak gelir. Dilerse
+‘tip’ alanı hariç tüm alanların bilgilerini değiştirebilir. Sayfanın altındaki **‘Güncelle’** butonuna
+basarak formu submit eder, Submit olmadan önce gerekli alanların kontrolü yapılır. Kontrol
+olumlu ise Haber güncellenir ve admin **Haber/DuyuruListesi** ekranına yönlendirilir, olumsuz
+ise Admin uyarılarak eksik alanlar gösterilir. Admin, formu submit etmeden çıkarsa herhangi
+bir güncelleme yapılmaz.
+
+Eğer güncellenen haberin tipi ‘Duyuru’ ise, Formda **bildirim checkbox’ı, bildirim başlığı ve
+bildirim açıklaması** alanları açılır. Admin, gönderilecekbildirimi özelleştirebilir. ilgili kullanıcı
+gruplarına bildirim gönderilir. Bildirim içeriğinde varsalıyan olarak haber başlığı ve
+güncelleme yapıldığına dair ibare bulunur.
+
+# 2.Akış | Mobil Uygulama Üzerinden Haberleri Görüntüleme
+
+Kullanıcı, deep link ile veya uygulama üzerinden olmak üzere iki şekilde haberleri görebilir.
+
+# 2.1 Uygulama Üzerinden Haber Görüntülenmesi
+
+Kullanıcı, bilgileri ile Mobil Uygulama’ya giriş yapar ve Haberler Modulünü açar.
+
+Kullanıcı, grubuna göre ve varsa Admin’in yaptığı özel sıralamaya göre listede ilk 10
+duyurunun **başlığını, oluşturulduğu tarihi, kapak fotoğrafını,özetini** görür. Aşağı indikçe
+haberler yüklenmeye devam eder.
+
+Kullanıcı, listeden detayını görmek istediği duyuruya dokunur ve detay ekranına yönlendirilir.
+Detay ekranında **duyuru başlığı, oluşturulduğu tarih,detay bilgileri** gözükür.
+
+Haber ile ilgili medyalar slider içerisinde gözükür. Kullanıcı slider’da kaydırarak medyaları
+inceleyebilir. Slider’a dokunarak tam ekranda inceleyebilir. Eğer video ise slider’ın ortasında
+‘Play’ ikonunu görüp, videoyu oynatabilir.
+
+# 2.2 Deeplink ile Haber Görüntülenmesi
+
+Kullanıcı, gelen bildirim’e veya paylaşılan link’e tıklayarak mobil uygulamayı açar.
+
+Eğer login olmuşsa doğrudan linkteki duyurunun detay ekranına yönlendirilir.
+
+Eğer login olmamışsa, **Login** ekranına yönlendirilir.Kullanıcı başarılı bir şekilde login
+olduktan sonra doğrudan linkteki duyurunun detay ekranına yönlendirilir.
+
+
+## News Database Schema
+
+| **NewsAndAnnouncements : Schema** |          |                                                                                      |
+|-----------------------------------|----------|--------------------------------------------------------------------------------------|
+| id                                | uuid     | ID                                                                                   |
+| title                             | string   | Haber Başlığı                                                                        |
+| spot                              | string   | Haber Özeti                                                                          |
+| body                              | string   | Haber Detayı                                                                         |
+| type                              | enum     | Haber mi yoksa duyuru mu olacağı bilgisi                                             |
+| announceFor                       | enum[]   | Bildirim gönderilecek kullanıcı grupları bilgisi. (Liste de bu bilgiye göre gelecek) |
+| rowNumber?                        | integer  | Haberin hangi sırada gösterileceği bilgisi                                           |
+| status                            | enum     | Haberin durumu                                                                       |
+| media                             | media[]  | Haber ile ilgili medya dosyalarının listesi                                          |
+| createdBy                         | uuid     | Haberi oluşturan kullanıcı ID’si                                                     |
+| updatedBy                         | uuid     | Son değişikliği yapan kullanıcı ID’si                                                |
+| createdAt                         | datetime | Oluşturulma tarihi                                                                   |
+| updatedAt                         | datetime | Düzenlenme tarihi                                                                    |
+
+## News API Doc Mobile
+
+### Haber ve Duyuru Listesi
+
+```json
+{
+   "Endpoint": "/news",
+   "Metod": "GET",
+   "Headers": {
+       "Authorization": "Bearer ${access-token}"
+   },
+   "Query Params": {
+       "page": "Number // sayfa numarası",
+       "limit" : "Number // sayfadaki eleman sayısı"
+   },
+   "Response": {
+       "metadata": {
+           "totalCount": "Number",
+           "page": "Number",
+           "limit": "Number"
+       },
+       "news": [
+           {
+               "spot": "String",
+               "createdAt": "Date",
+               "id": "ObjectID",
+               "coverImage": "String"
+           }
+       ]
+   }
+}
+```
+
+### Haber veya Duyuru Detayı
+
+```json
+{
+   "Endpoint": "/news/:newsId",
+   "Metod": "GET",
+   "Headers": {
+       "Authorization": "Bearer ${access-token}"
+   },
+   "Params": {
+       "newsId" : "ObjectID as String"
+   },
+   "Response": {
+       "_id": "ObjectID",
+       "title": "String",
+       "spot": "String",
+              "body": "String",
+       "type": "NewsFeedTypes as Number",
+       "announceFor": [
+           "Number"
+       ],
+       "media": [
+           {
+               "name": "String",
+               "type": "MediaTypes as Number",
+               "isCoverImage": "Boolean",
+               "_id": "ObjectID",
+               "createdAt": "Date",
+               "updatedAt": "Date"
+           }
+       ],
+       "status": "NewsStatus as Number",
+       "createdBy": "ObjectID",
+       "updatedBy": "ObjectID",
+       "createdAt": "Date",
+       "updatedAt": "Date"
+   }
+}
+```
+
+### Haber Tipi
+
+```typescript
+enum NewsFeedTypes {
+   ANNOUNCEMENT = 0,
+   NEWS = 1
+}
+enum MediaTypes {
+   IMAGE = 0,
+   VIDEO = 1
+}
+
+enum NewsStatus {
+   ACTIVE = 1,
+   PASSIVE = 0,
+}
+```
+
+### Haber Listesi Response
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/smartface-projects/employee-experience/news-list-response.png"></Screenshot>
+
+### Haber Detay Response
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/smartface-projects/employee-experience/news-detail-response.png"></Screenshot>
+
+
+

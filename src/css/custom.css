@@ -40,7 +40,7 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
 
 .section-title.theme-doc-sidebar-item-category-level-1 .menu__list-item-collapsible {
   text-transform: uppercase;
-  font-size: 1rem;
+  font-size: 0.85rem;
   margin: 36px auto 16px 0;
   letter-spacing: 0.05rem;
   color: var(--ifm-font-color-base);

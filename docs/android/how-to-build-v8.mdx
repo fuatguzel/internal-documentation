@@ -1,0 +1,70 @@
+# How to Build V8
+
+Currently, we are using v8 pre-built shared libraries in framework-android project. This below written content will describe how we built the v8.
+
+
+## Build Helper Script 
+
+We have written shell script to make the process easer and continues compilation with same configurations. [Reach the helper script](https://bitbucket.org/smartface-team/build-tools/src/master/)
+
+You might either chose to go with script or build manually as we described below steps;
+
+## Step-by-step guide (Manual Build)
+
+1. Install depot tools, guide can be found here
+2. Open terminal and locate to folder where you want to clone v8 repository
+3. gclient
+4. fetch v8
+5. If above commands ends successfully you should have a .gclient file in the current directory. Open it and add `target_os = ["android"]` line to end of the file. It should look like below at the end.
+
+```typescript title="gclient"
+solutions = [
+  {
+    "url": "https://chromium.googlesource.com/v8/v8.git";,
+    "managed": False,
+    "name": "v8",
+    "deps_file": "DEPS",
+    "custom_deps": {},
+  },
+]
+target_os = ["android"]
+```
+
+6. cd v8
+7. git checkout 6.0.174
+8. cd .. && gclient sync
+9. cd v8 && rm -rf third_party/android_tools/ndk
+10. cd third_party/android_tools
+11. ln -s ${ANDROID_NDK} ndk
+12. cd ../..
+13. Now open build/config/android/config.gni file and find the line a value set to _android_api_level. Change its value to 23 (_android_api_level = 23).
+14. tools/dev/v8gen.py arm.release
+15. Above command should create out.gn/arm.release/args.gn file. Open it and change its content as below
+
+```typescript title="args.gn"
+is_debug = false
+target_cpu = "arm"
+v8_target_cpu = "arm"
+target_os = "android"
+v8_use_snapshot = false
+is_component_build = true
+v8_enable_i18n_support = false
+is_clang = false
+treat_warnings_as_errors = false
+```
+
+16. gn gen out.gn/arm.release
+17. ninja -j 2 -C out.gn/arm.release
+
+## After the build
+
+If you successfully run script or  finish all steps written above  you may find 3 libraries (libv8.cr.so, libv8_libbase.cr.so, libv8_libplatform.cr.so) generated in out.gn/arm.release folder. These are the V8 libraries required to use V8 on Android. They depend on each other and all of them required. Built v8 static or shared libraries uses llvm c++  as STL and our current framework-android projects run time STL is differs. So we force to use that STL for v8. To do that, copy all shared libraries of llvm c++ STL to corresponding arch folders which contains v8 shared / static libs.  
+
+To build with different arches, change the arm with;
+
+* arm64
+* x86
+* x64
+
+
+

@@ -1,0 +1,122 @@
+import Screenshot from "@site/src/components/Screenshot";
+
+# Development Flow
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/development-guides/app-development-flow.png"></Screenshot>
+
+In every step of this flow, there is a checklist of required things to start, and required things to complete for finishing the state.
+
+## Requirements Analysis
+
+- What does a customer want? Divide those into tasks.
+- How can you satisfy the needs of App Development? Define solutions for tasks.
+- Does anything needs to be divided in to phases? If so define the phases.
+- Who will be responsible to complete the given tasks? Assign tasks to responsible people or teams.
+- All of the technologies that are going to be used, should be supplied.
+- Start to code with test cases.
+
+## Wire Frame Design
+
+Before beginning of this phase, requirements and phases should be defined. Wire Frame Design is simple outline black & white design of the user interface. This contains story board flow and interaction points.
+
+- Wire frame design of UI pages. (Pages: A, B, C)
+- Connect pages with a flow. (A –> B –> C)
+- Define which interactions (also it can be gesture) should be made to initiate the flow. (Pressing button on page A goes to page B)
+- Define requirements for interaction (Pressing button on page A validates values of the two editboxes, if valid, goes to page B)
+- When completing the design, customer approvement is nice to have.
+
+## Visual Design
+
+In this phase, characteristics of the application is determined. Sample pages are colorized by the completed wire frame design of the pages.
+
+- Colorization of sample pages
+- Defining color characteristics of the application, this defines reusing which colors on which cases.
+- Defining scalability rules for UI. How an object should expand, which objects are anchored when layout or ratio changes.
+- After creating Visual Design and its rules, it should meet customers’ expectations.
+- After the approvement, created visual design should be re-sized and cropped to use images in development. Using PNG format is advised, PNG is supported by all platforms.
+
+## Client / Server Data Flow Design
+
+The flow of the application is determined in previous wire frame design phase. According to the flow in the app and also for the other requirements such as security, data flow inside the app, between app and server is designed here.
+
+- Mobile App Developer should determine which data should be carried between UI pages.
+- According to the business rules how the data should be stored and maintained?
+- Service signatures should be handshaked.
+- Handling service error cases (validation of business rules on server side) should be determined.
+
+## Application User Interface Development
+
+After having visual design completed, having necessary images cropped and ready, Application User Interface (UI) development can start. Changes in previous phases can cause loss of work, it is better having everything is settled in previous states.
+
+- Developing UI of the layouts.
+- All UI rules should be applied for the given rules of design.
+- Application flow and local control of the flow should be implemented. All of the application should be navigable.
+- After having a unit test of UI development, it is good to show developed prototype of the application to he customer.
+
+## Stub Services
+
+Stub services are dummy services defined by the signature on purpose of receiving request in defined signature and returning static response regardless of the data. They do not execute anything on server side to process the request, just a place holder for the upcoming development of the server side services. According to the business work flow requirement this short phase might be skipped and continued with Online Service Layer development. However skipping of stub services is not advised, a delay on Online Service Layer development impact development of Integrated development. In some cases of online development require binding other services in order to implement a service, this also may impact development of the application.
+
+- Providing accessible services for App Development.
+- Accepting every data in given signature, returning static data.
+- The response data should contain combination of all of the possible structure of responses including errors. Structure is important, App developers use this structure to develop their own application.
+- A call of a service should not require a any other previous service call.
+
+## Integrated Development
+
+This phase of development is about integrating the developed prototype application with services. If not skipped, completing the Stub Services, or if skipped with minimum set of Online Services is required to start this phase of development.
+
+- Services are going to be bound with the application (both data and UI).
+- Business service logic for service calls and variations of responses (such as correct response and error response) are going to be handled by the application by the given signature.
+
+## Online Services
+
+In this phase real business logic of the application is going to be implemented on server side.
+
+- Stub services are going to be turned into online services.
+- Business logic of the services are going to be implemented.
+
+## Product Test
+
+Product Test is a test phase made by the developers of the App. In previous phases, developers have completed their unit tests with their developments.
+
+- Developers test the complete product against defects.
+- UI and Service bugs are going to be fixed.
+- Missed developments are going to be developed. All of the missed development is expected to be fixed in this phase.
+- Most of the tests are based on happy path execution.
+
+## Test Cases
+
+Writing of test cases is a side process of app development. It starts after requirements design and gathers materials to the end of Visual Design and Client / Server Data Flow Design completes. During and after those phases test cases can be written until those written tests starts in Functional tests.
+
+- Collecting whole quality parameters in all design phases
+- Writing test cases for happy and negative path, determining the expected results
+- Writing metrics for test cases (For example how much effort is required to execute the test)
+- Combining test cases for bigger tests
+- Determining the basic rules for test cases in case of failed tests and who or which team is responsible for the fix
+
+# Functional Test
+
+This is the biggest test phase of the app. The application is given to the test team for testing it against functional defects written in test cases.
+
+- Test team focuses on breaking the application, including the written test cases or monkey tests.
+- Developer teams are working on bug fixing.
+- Application is being prepared for to be bug free and quality.
+
+## User Acceptance Test
+
+This is the final state of the application development. The App is given to the customer for final reviews and approvement.
+
+- Customer tests the application for its needs.
+- Customer may give feedback for changing things. This also may require some additional development.
+- Customer approves the application for publishing to the market
+- Customer may also want to go to the pilot test with real actual data.
+
+## Deployment
+
+In this phase product is packed for market submission.
+
+- Final descriptive alterations of the product are made for market.
+- For Apple App Store release, writing of usage document might be necessary.
+- Also in some cases, if the Apple Store tester might not be able to access some areas of the application. For those situations providing a documentary video might be also useful.
+- Product is submitted to Google Play or Apple App Store. Also it can be placed on Cloud Services to get advantages of single point of distribution.

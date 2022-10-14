@@ -1,0 +1,37 @@
+# Android MapClustering
+
+In Android,  map clustering have implemented by Google Maps Android Marker Clustering Utility(version 0.5+).  iOS and Android implementation was differing. To overcome this issue, two java classes being added.  Those java classes called as;
+
+* ClusterItemRenderer: This class implements ClusterItem interface which is build in utility. By implementing ,  we have achieved that  producing several cluster pins.  Otherwise Native API access was having memory leakage due to the this issue, we were not able to produce several cluster items (pins like >500). 
+* DefaultClusterRendererCustom:  This class implements ClusterRenderer interface. Contains 900 lines which is not written by us. Directly taken from cluster utility to make some changes. Otherwise google maps not allowing us to change default behavior of its cluster icon. Those changes as;
+
+```java
+public static int clusterTextColor;
+public static int clusterTextSize;
+public static Typeface clusterTypeface;
+public static int clusterTypefaceStyle;
+public static int clusterBackgroundColor;
+ 
+public SquareTextView makeSquareTextView(Context context) {
+        SquareTextView squareTextView = new SquareTextView(context);
+        squareTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, clusterTextSize);
+        squareTextView.setTextColor(clusterTextColor);
+        squareTextView.setTypeface(clusterTypeface, clusterTypefaceStyle);
+ 
+        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,    ViewGroup.LayoutParams.WRAP_CONTENT);
+        squareTextView.setLayoutParams(layoutParams);
+        squareTextView.setId(R.id.amu_text);
+        // initial is 12dp, I resize the round shape padding to 6dp
+        int twelveDpi = (int) (6 * mDensity);
+        squareTextView.setPadding(twelveDpi, twelveDpi, twelveDpi, twelveDpi);
+ 
+        return squareTextView;
+}
+```
+
+Drawbacks of this way is; 
+* Might be difficult to maintain in case of version update. 
+
+Should be careful;
+* Version updating of goolge cluster utils, might effect this cloned DefaultClusterRendererCustom class. 
+

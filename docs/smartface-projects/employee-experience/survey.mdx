@@ -1,0 +1,333 @@
+import Screenshot from "@site/src/components/Screenshot";
+
+# Survey Module
+
+## Survey Flow
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/smartface-projects/employee-experience/survey-flow.png"></Screenshot>
+
+## Survey Analysis
+
+Bu modül, Employee Experience uygulamasında yöneticilerin Anket oluşturması,
+yayınlaması, sonuçları analiz etmeleri , kullanıcıların anketleri mobil uygulama üzerinden
+listeleme ve yanıtlamaları için geliştirilmektedir.
+
+Bu modül içerisinde,
+**Admin :** Employee Experience Admin Web uygulamasınıkullanma yetkisi olan kişi,
+**Kullanıcı :** Employee Experience Mobil uygulamasınıkullanan kişi olarak tanımlanmıştır.
+
+# 1.Akış | Web Uygulaması Üzerinden Anket Yönetim Süreci
+
+# 1.1 Anket Oluşturma
+
+Admin, kullanıcı bilgileri ile Admin Web uygulamasına giriş yapar ve **Anket Oluşturma
+Formu** sayfasına gider.
+
+Açılan anket formunda aşağıdaki bilgiler bulunur.
+
+| **Alan**                          | **Tip**                 | **Gereklilik**                |
+| --------------------------------- | ----------------------- | ----------------------------- |
+| Kullanıcı Grupları                | Multiple SelectBox      | varsayılan : Tüm kullanıcılar |
+| Anket Başlığı                     | Alphanumeric            | Gerekli                       |
+| Anket Son Geçerlilik Tarihi       | Datetime                | varsayılan : Süresiz          |
+| Anketin Anonim Olup/Olmama Durumu | Boolean                 | varsayılan: false             |
+| Sorular                           | List , item: Soru Formu | Gerekli, en az 1              |
+
+Anket formunun Sorular alanında ‘Soru ekleme butonu’ na tıklayarak listeye yeni bir **Soru
+Formu** ekler. Her bir soru formunda aşağıdaki bilgileridoldurur:
+
+| **Alan**                                          | **Tip**                    | **Gereklilik**     |
+| ------------------------------------------------- | -------------------------- | ------------------ |
+| Soru Başlığı                                      | Alphanumeric               | Gerekli            |
+| Birden Fazla Cevabın Kabul Edilip/Edilmeme Durumu | Boolean                    | varsayılan : false |
+| Yanıtın Zorunlu Olup/Olmama Durumu                | Boolean                    | varsayılan: false  |
+| Seçenekler                                        | List , item: Seçenek Formu | Gerekli            |
+
+Soru formunun Seçenekler alanında ‘Seçenek ekleme butonu’ na tıklayarak listeye yeni bir
+**Seçenek Formu** ekler. Her bir seçenek formunda aşağıdakibilgileri doldurur:
+
+| **Alan**        | **Tip**      | **Gereklilik** |
+| --------------- | ------------ | -------------- |
+| Seçenek Başlığı | Alphanumeric | Gerekli        |
+| Seçenek Tipi    | Selectbox    | Gerekli        |
+
+Seçenek tipi ‘checkbox’ veya ‘textbox’ olabilir.
+
+Admin, anketi ve soruları oluşturduktan sonra ‘Oluştur’ butonuna basarak formu submit eder,
+Submit olmadan önce gerekli alanların kontrolü yapılır. Kontrol olumlu ise Anket oluşturulur,
+olumsuz ise Admin uyarılarak eksik alanlar gösterilir.
+
+# 1.2 Anket Raporlama
+
+Admin, kullanıcı bilgileri ile Admin Web uygulamasına giriş yapar ve **Anketler** sayfasına
+gider.
+
+Sayfa açıldığında, Tüm anketler data table içerisinde listelenir. Listelenecek datatable’da şu
+bilgiler bulunur :
+
+| **Alan**                            | **Tip**      |
+| ----------------------------------- | ------------ |
+| Anket Başlığı                       | Alphanumeric |
+| Anketi Oluşturan Kişinin Adı Soyadı | Alphanumeric |
+| Anketin Anonim Olup/Olmama Durumu   | Alphanumeric |
+| Anketin Oluşturulma Tarihi          | Datetime     |
+| Anketin Bitimine Kalan Süre         | Alphanumeric |
+| Detay Butonu                        | Button       |
+
+Admin, datatable’da **‘Anket Oluşturulma Tarihi’** , **‘AnketBaşlığı’** alanlarına göre arama
+yapabilir.
+
+Datatable’dan, detayını görmek istediği anketin **‘DetayButonu’** na tıklayarak **Detay
+Sayfası’** nı açar.
+
+**Detay Sayfası** ’nda, bir datatable içerisinde, Anketicevaplayan kullanıcı bilgileri listelenir.
+Datatable’da şu bilgiler bulunur:
+
+| **Alan**                            | **Tip**      |
+| ----------------------------------- | ------------ |
+| Kullanıcının Adı Soyadı             | Alphanumeric |
+| Kullanıcının Grup/Departman Bilgisi | Alphanumeric |
+| Anket Son Yanıt Tarihi              | Datetime     |
+| Cevapları Görüntüle Butonu          | Button       |
+
+Admin, ‘ **Cevapları Görüntüle Butonu** ’ na tıklayarak seçtiği cevapları görebilir. Eğer Anket,
+anonim bir anket ise **‘Kullanıcının Adı Soyadı’** , “Anonim”olarak gözükür.
+
+**Detay Sayfası** ’nda ayrıca, **Ankete kaç kişinin katıldığı** , **Sorularda kaç kişinin hangi
+seçeneği işaretlediği** bilgileri gözükür. Açık uçlusoru seçeneğini cevaplayan kişi sayısını
+gösteren linke tıklanarak, tüm açık uçlu cevaplar listelenebilir.
+
+# 1.Akış | Mobil Uygulama Üzerinden Anket Yanıtlama
+
+Kullanıcı, bilgileri ile Mobil Uygulama’ya giriş yapar ve Anketler Modulünü açar.
+
+Kullanıcı, kendi grubuna göre katılması beklenen, süresi geçmemiş anket listesini ve
+ilerleme durumunu görür. Katılmak istediği ankete dokunarak detay ekranına yönlenir.
+
+Kullanıcı Anket’i daha önce tamamlamış ise, detay sayfasını göremez.
+
+Kullanıcı Ankete ilk kez katılıyor ise, Veritabanında yeni bir **‘Answers’** dökümanı oluşturulur.
+İlk kez katılmıyor ise, daha önce cevaplamış olduğu sorular doldurulur ve cevaplamadığı
+soruların ilkine yönlendirilir.
+
+Kullanıcı, indicator’deki butonlara dokunarak veya ekranı swipe ederek sorular arasında
+geçiş yapar ve cevaplarını verir. Soruları cevaplamadan, istediği soruyu görebilir. Son soruyu
+gördüğünde ‘ **Kaydet ve Bitir** ’ butonu çıkar. Bu butonadokunarak cevaplarını submit edebilir.
+Submit edilmeden önce, Ankette ‘ **Cevap Verilmesi Zorunlu** ’olarak işaretlenen soruların
+cevaplanıp cevaplanmadığı kontrol edilir.
+
+Eğer gerekli sorular cevaplanmış ise, anket submit olur ve anket listesi ekranına geri döner.
+
+Eğer gerekli sorular cevaplanmamış ise, kullanıcı uyarılır ve cevaplanması gereken ilk
+soruya yönlendirilir.
+
+Kullanıcı, anketi submit etmeden, ‘ **Geri** ’ butonunatıklarsa, ekrana ‘Anket tamamlanmadı’
+uyarısı çıkar. Uyarı’da ‘Çık’ seçeneği seçilir ise Anketin son durumu kaydedilir ve anket
+listesine yönlendirilir, seçilmez ise ankete kaldığı yerden devam eder.
+
+## Survey Database Schema
+
+| **Surveys : Schema** |              |                                                                                         |
+| -------------------- | ------------ | --------------------------------------------------------------------------------------- |
+| Field Name           | Data Type    | Description                                                                             |
+| id                   | uuid         | ID                                                                                      |
+| title                | string       | Anket başlığı                                                                           |
+| createdBy            | uuid         | Anketi oluşturan kullanıcı ID’si                                                        |
+| surveyFor            | Enum[ ]      | Anketin hangi kullanıcı gruplarına hitap ettiği bilgisi. (Departman, yetki, mevki vs..) |
+| questions            | questions[ ] | Anket soruları                                                                          |
+| status               | Enum         | Anketin Durumu                                                                          |
+| totalQuestions       | integer      | Anketteki toplam soru sayısı                                                            |
+| isAnonymous          | boolean      | Anket cevaplarının anonim olup/olmayacağı bilgisi                                       |
+| expireDate           | datetime     | Anketin süresi                                                                          |
+| createdAt            | datetime     | Oluşturulma tarihi                                                                      |
+| updatedAt            | datetime     | Düzenlenme tarihi                                                                       |
+
+| **Options : Field** |           |                                                       |
+| ------------------- | --------- | ----------------------------------------------------- |
+| Field Name          | Data Type | Description                                           |
+| id                  | uuid      | ID                                                    |
+| type                | Enum      | Seçenek tipi, ‘checkbox’ veya ‘textbox’ ‘ı ifade eder |
+| title               | string    | seçenek başlığı                                       |
+| createdAt           | datetime  | Oluşturulma tarihi                                    |
+| updatedAt           | datetime  | Düzenlenme tarihi                                     |
+
+| **Answers : Schema** |           |                                           |
+| -------------------- | --------- | ----------------------------------------- |
+| Field Name           | Data Type | Description                               |
+| id                   | uuid      | ID                                        |
+| surveyId             | uuid      | Anket ID’si                               |
+| userId               | uuid      | Anketi cevaplayan kullanıcının ID’si      |
+| answeredQuestions    | integer   | Cevaplanan soru sayısı                    |
+| answers              | answer[ ] | Cevap listesi                             |
+| status               | Enum      | Anketin tamamlanıp tamamlanmadığı bilgisi |
+| createdAt            | datetime  | Oluşturulma tarihi                        |
+| updatedAt            | datetime  | Düzenlenme tarihi                         |
+
+## Survey API
+
+### SURVEY-API ENDPOINTS
+
+- surveys/health-check : GET
+- surveys/ : POST
+- surveys/ : GET
+- surveys/:surveyId : GET
+- surveys/:surveyId/report/:userId : GET
+- surveys/:surveyId/report : GET
+- surveys/:surveyId/answer : PUT
+
+### SURVEY API ENVIRONMENT CONFIGS
+
+```javascript
+export const DATABASE_URL = process.env.DATABASE_URL;
+export const DATABASE_NAME = process.env.DATABASE_NAME;
+export const NODE_ENV = process.env.NODE_ENV;
+export const PORT = process.env.PORT || 80;
+export const DISABLE_LOGS = process.env.DISABLE_LOGS || false;
+```
+
+### Konfigürasyon Yapısı:
+
+- ‘.env’ klasörü içerisinde ‘test.env’ ve ‘prod.env’ adında iki adet environment
+  dosyası bulunur.
+- Uygulamayı başlatırken ‘cross-env’ paketi ile NODE_ENV değişkeni set edilir.
+- ‘./src/constants/app.ts’ içerisinde ‘dotenv’ ile ilgili environment dosyasından
+  bilgiler okunur ve export edilir.
+- export edilen değişkenler ilgili yerlerde kullanılır
+
+### App.ts
+
+```javascript
+import { join } from 'path';
+
+require('dotenv').config({path : join(__dirname,
+`../../.env/${process.env.NODE_ENV}.env`) });
+
+export const DATABASE_URL = process.env.DATABASE_URL;
+export const DATABASE_NAME = process.env.DATABASE_NAME;
+export const NODE_ENV = process.env.NODE_ENV;
+export const PORT = process.env.PORT || 80;
+export const DISABLE_LOGS = process.env.DISABLE_LOGS || false;
+```  
+
+## Survey API Doc Mobile
+
+### Survey
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/smartface-projects/employee-experience/survey-object.png"></Screenshot>
+
+
+```json
+{
+  "survey": {
+    "id": 1,
+    "title": "Kullanıcı memnuniyeti anketi",
+    "createdBy": 42,
+    "surveyFor": [1, 5, 9],
+    "status": true,
+    "totalQuestions": 2,
+    "isAnonymous": false,
+    "expireDate": "17-10-2023",
+    "createdAt": "9-10-2023",
+    "updatedAt": "9-10-2023",
+    "questions": [
+      {
+        "id": 1,
+        "title": "Yemeklerden Memnun musunuz ?",
+        "multipleAnswer": false,
+        "isRequired": false,
+        "createdAt": "9-10-2023",
+        "updatedAt": "9-10-2023",
+        "options": [
+          {
+            "id": 1,
+            "type": 0,
+            "title": "Çok memnunum",
+            "createdAt": "9-10-2023",
+            "updatedAt": "9-10-2023"
+          },
+          {
+            "id": 2,
+            "type": 0,
+            "title": "Az memnunum",
+            "createdAt": "9-10-2023",
+            "updatedAt": "9-10-2023"
+          },
+          {
+            "id": 3,
+            "type": 1,
+            "title": "Diğer",
+            "createdAt": "9-10-2023",
+            "updatedAt": "9-10-2023"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Servis saatlerinden memnun musunuz ?",
+        "multipleAnswer": true,
+        "isRequired": false,
+        "createdAt": "9-10-2023",
+        "updatedAt": "9-10-2023",
+        "options": [
+          {
+            "id": 4,
+            "type": 0,
+            "title": "Çok memnunum",
+            "createdAt": "9-10-2023",
+            "updatedAt": "9-10-2023"
+          },
+          {
+            "id": 5,
+            "type": 0,
+            "title": "Az memnunum",
+            "createdAt": "9-10-2023",
+            "updatedAt": "9-10-2023"
+          },
+          {
+            "id": 6,
+            "type": 1,
+            "title": "Diğer",
+            "createdAt": "9-10-2023",
+            "updatedAt": "9-10-2023"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Answer
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/smartface-projects/employee-experience/answer-object.png"></Screenshot>
+
+
+```json
+{
+  "answers": {
+    "id": 1,
+    "surveyId": 1,
+    "userId": 1,
+    "answeredQuestions": 1,
+    "status": false,
+    "createdAt": "9-10-2023",
+    "updatedAt": "9-10-2023",
+    "answers": [
+      {
+        "id": 1,
+        "questionId": 2,
+        "optionId": 4,
+        "value": false,
+        "createdAt": "11-10-2023"
+      },
+      {
+        "id": 2,
+        "questionId": 2,
+        "optionId": 6,
+        "value": "Servis, tek sefer yaptığı için çoğu zaman ayakta gidiyoruz.",
+        "createdAt": "11-10-2023"
+      }
+    ]
+  }
+}
+```

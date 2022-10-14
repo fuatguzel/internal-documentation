@@ -18,7 +18,9 @@ const config = {
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'smartface', // Usually your GitHub org/user name.
   projectName: 'internal-documentation', // Usually your repo name.
-
+	plugins: [
+		"plugin-image-zoom"
+	],
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want
   // to replace "en" with "zh-Hans".
@@ -38,7 +40,7 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/smartface/internal-documentation',
+            'https://github.com/smartface/internal-documentation/tree/main',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -70,7 +72,7 @@ const config = {
       prism: {
         theme: require('prism-react-renderer/themes/shadesOfPurple'),
         darkTheme: darkCodeTheme,
-        additionalLanguages: ['swift'],
+        additionalLanguages: ['swift','java','kotlin','bash','objectivec','http'],
       },
     }),
 };

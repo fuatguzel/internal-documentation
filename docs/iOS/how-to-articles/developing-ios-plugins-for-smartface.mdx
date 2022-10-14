@@ -1,0 +1,445 @@
+import Screenshot from "@site/src/components/Screenshot";
+import DoubleImage from "@site/src/components/DoubleImage";
+
+# Developing iOS Plugins for Smartface
+
+Development flow of the Smartface Plugin will be like this :
+
+- Run a CLI command to create a plugin template for iOS.
+  - Add your previously developed plugin file to template project.
+  - Compile to check build errors.
+- Run a CLI command to generate a plugin zip file from the project.
+- Drag and drop plugin zip file to Smartface project.
+
+## Step 1 : Create Plugin Template Project
+
+Smartface CLI (Command Line Interface tool) is a prerequisite for plugin development. For more information and installation instructions, visit the CLI page.
+
+The following CLI command is used for creating iOS plugin template Xcode project. It is recommended to create the Xcode project folder first and then Change Directory (CD) into it.
+
+From Mac, open terminal and use the following command:
+
+```bash
+smfc --task=create_iOSPlugin [--path=…] [--playerPath=…]
+```
+
+- **task :**“create_iOSPlugin” is specified to create iOS plugin template.
+- **path :** Path of the template project to be created. If not provided, current folder is used.
+- **playerPath :** Path of the base player or project to create the template from. If not provided, currently associated versions with the CLI are used. There is some post processing applied to the zip file content when extracted, do not try to use zip file as is.
+
+## Step 2 : Add Plugins
+
+It is possible to write the plugin as a static library or just by providing the source files of it.
+
+Open Xcode project that was created from the previous CLI command, then drag and drop your plugins.
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/ios/ios-plugins.png"></Screenshot>
+
+## Step 3 : Configure Plugins For Smartface
+
+If you have already written a plugin as follows:
+
+CalculatorPlugin.h
+
+```swift
+#import <Foundation/Foundation.h>
+
+@interface CalculatorPlugin : NSObject
+
+- (NSNumber*)addNumbers:(NSArray*)numbers;
+
+@end
+```
+
+CalculatorPlugin.m
+
+```swift
+#import "CalculatorPlugin.h"
+
+@implementation CalculatorPlugin
+
+- (NSNumber*)addNumbers:(NSArray*)numbers {
+    double result = 0;
+    for (NSNumber *number in numbers) {
+        result += number.doubleValue;
+    }
+    return @(result);
+}
+
+@end
+```
+
+To expose your functions to JavaScript, you need define a protocol that conforms to JSExport, add your functions that you want to expose to JavaScript to this protocol, then finally let your plugin class conform to this protocol as follows:
+
+CalculatorPlugin.h
+
+```swift
+#import <Foundation/Foundation.h>
+#import <JavaScriptCore/JavaScriptCore.h> //1. Include JavaScriptCore to use JSExport
+
+@protocol CalculatorPluginExport <JSExport> //2. Define your plugin protocol
+
+- (NSNumber*)addNumbers:(NSArray*)numbers; //3. Only write functions that you want to expose to JavaScript
+
+@end
+
+@interface CalculatorPlugin : NSObject<CalculatorPluginExport> //4. Let your plugin conform to this protocol
+
+- (NSNumber*)addNumbers:(NSArray*)numbers;
+
+@end
+```
+
+You can create plugin objects for your JavaScript either from JavaScript itself or from Objective-C. If you want to create plugin objects in JavaScript itself, you have to do one final step in your plugin's configuration which is to provide an init function in your plugin. For example, If you write "new CalculatorPlugin()" in JavaScript to create a plugin object, it will check for "-(instancetype)init{}" in your plugin class, this init function must be written in the JSExport protocol and implemented in your plugin class. If you write "new MyPlugin({"dictionaryKey":"dictionaryValue"})", it checks for "-(instancetype)initWithDictionary:(NSDictionary\*)dictionary{}" which must be written also in the JSExport protocol. According to what JavaScriptCore framework provides, you can have one init function in your JSExport protocol.
+The final update for CalculatorPlugin class is as follows:
+
+CalculatorPlugin.h
+
+```swift
+#import <Foundation/Foundation.h>
+#import <JavaScriptCore/JavaScriptCore.h> //1. Include JavaScriptCore to use JSExport
+
+@protocol CalculatorPluginExport <JSExport> //2. Define your plugin protocol
+
+- (NSNumber*)addNumbers:(NSArray*)numbers; //3. Only write functions that you want to expose to JavaScript
+- (instancetype)init; //5. To be able to create plugin objects from JavaScript itself
+
+@end
+
+@interface CalculatorPlugin : NSObject<CalculatorPluginExport> //4. Let your plugin conform to this protocol
+
+- (NSNumber*)addNumbers:(NSArray*)numbers;
+
+@end
+```
+
+CalculatorPlugin.m
+
+```swift
+#import "CalculatorPlugin.h"
+
+@implementation CalculatorPlugin
+
+- (instancetype)init //5. To be able to create plugin objects from JavaScript itself
+{
+    self = [super init];
+    if (self) {
+        //initialization
+    }
+    return self;
+}
+
+- (NSNumber*)addNumbers:(NSArray*)numbers {
+    double result = 0;
+    for (NSNumber *number in numbers) {
+        result += number.doubleValue;
+    }
+    return @(result);
+}
+
+@end
+```
+
+## Step 4 : Register Plugins
+
+Objective-C plugins are loaded into JavaScriptCore engine in SmartfaceAppDelegate class. willSetCustomPluginsOnContext function of AppDelegate runs after internal Smartface libraries are loaded. It has the singleton global context as a parameter in case you need it. You will need this parameter to register your plugin classes so that JavaScript can understand them, you can also create instances of your plugin for your JavaScript using this singleton global context from your Objective-C.
+
+Open SmartfaceAppDelegate, inside willSetCustomPluginsOnContext, write the following:
+
+```objectivec
+#import "CalculatorPlugin.h" //1. Import your plugin
+
+- (void)willSetCustomPluginsOnContext:(JSContext*)context
+{
+	//2. Register your plugin's class
+    context[@"CalculatorPlugin"] = [CalculatorPlugin class];
+
+    //3. Optional: create plugins objects for your JavaScript
+    context[@"calculatorPluginObject1"] = [CalculatorPlugin new];
+    context[@"calculatorPluginObject2"] = [CalculatorPlugin new];
+
+    /*
+     1. Register plugin's class, write the following line here:
+     context[@"MyPlugin"] = [MyPlugin class]; //now JavaScript understands MyPlugin class
+     2. Create plugin's objects for JavaScript to call any Objective-C function from JavaScript:
+     Option 1: Create plugin's objects for JavaScript in Objective-C, write the following 2 lines here:
+     context[@"myPluginObject1"] = [MyPlugin new];
+     context[@"myPluginObject2"] = [MyPlugin new]; //Now you can use myPluginObject1 and myPluginObject2 in JavaScript
+     Option 2: OR Create plugin's objects in JavaScript itself:
+     First you need to implement init function inside MyPlugin class, write it in the JSExport protocol, then you can write the following 2 lines in JavaScript:
+     MyPlugin myPluginObject1 = new MyPlugin(); //this will call the init function of your Objective-C Plugin
+     MyPlugin myPluginObject2 = new MyPlugin(); //Now you can use myPluginObject1 and myPluginObject2 in JavaScript
+
+     3. Call-back JavaScript from Objective-C:
+     In JavaScript, write the following line:
+     myPluginObject1.doSomethingWithCallBack(function(parameter){
+     //do whatever you want in JavaScript
+     });
+     In Objective-C:
+     - (void) doSomethingWithCallBack:(JSValue*)callBackJSValue {
+     //do something
+     [callBackJSValue callWithArguments:@[@"Parameter"]];
+     }
+     */
+}
+```
+
+## Step 5 : Prepare Plugins For Smartface
+
+Like an npm package, plugins use a “package.json” file to identify it's contents. It is recommended to use following command to create a new “package.json” file after Changing Directory (CD) into Xcode project folder:
+
+```bash
+npm init
+```
+
+This will use command line interface to create a new “package.json” file or modify the existing one. Based on the approach, you may need to modify the “package.json” file manually.
+
+In the file, add following fields to the JSON:
+
+- OS {string} – Identifies if it is an iOS or an Android plugin. Possible values are : “Android” or “iOS”. Since we're developing an iOS plugin, this will be iOS.
+- cpu {array.string} – Identifies architecture types supported by the plugin. Possible values are: “x86”, “ARM”, “ARM64”. For Android, it can be “x86” or “ARM” or both. For iOS, it is required to have “ARM” and “ARM64” together.
+
+Remove the following field from the JSON:
+
+- main
+
+Also, you can copy the following package.json and change it's values. Make sure that "name" value must be in small letters.
+
+```json
+{
+  "name": "yourpluginname",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "OS": "iOS",
+  "cpu": ["ARM", "ARM64"]
+}
+```
+
+After performing the necessary steps as described above, plugin zip file can be created using the following CLI command. Change Directory (CD) to the Xcode project folder and type:
+
+```bash
+smfc --task=generate_iOSPluginZip
+```
+
+If the operation is completed successfully, a zip file will be created inside the Xcode project folder. This file is ready to use and ready to distribute for Smartface Developer to use. You can rename the .zip file as your plugin name.
+
+## Step 6 : Add Your Plugins To Your Workspace On Smartface IDE
+
+After generating your plugin zip, open your cloud IDE workspace, drag and drop your plugin zip file under plugin folder.
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/ios/ios-plugin-s-1.png"></Screenshot>
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/ios/ios-plugin-s-2.png"></Screenshot>
+
+Now open your project.json file
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/ios/ios-plugin-s-3.png"></Screenshot>
+
+then navigate to build → input → iOS → plugins, then finally inside plugins add the following:
+
+```json
+"yourpluginname": {
+    "url": "if you will get the plugin data from url please write here",
+    "path": "plugins/iOS/yourplugin.zip",
+    "active": true
+}
+```
+
+For example:
+
+```json
+{
+  "build": {
+    "input": {
+      "ios": {
+        "plugins": {
+          "yourpluginname": {
+            "url": "",
+            "path": "plugins/iOS/calculatorplugin.zip",
+            "active": true
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Important thing to consider, "yourpluginname" written in project.json in your workspace must match "yourpluginname" written in package.json before creating the plugin zip file.
+
+## Step 7 : Use Plugins In Smartface
+
+You can use your plugins from Smartface in JavaScript as follows:
+
+```javascript
+alert(calculatorPluginObject1.addNumbers([1, 2, 3]));
+```
+
+Then finally you need to publish your project to generate Xcode project.
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/ios/ios-plugin-xcode.png"></Screenshot>
+
+Download your Xcode project, open it, build it first then run. Note that the published Xcode project with plugins will give “build failed” error on Xcode for the first build because plugins zip files are extracted and compiled for the first time. After the first build, “clean” your project and run your project again for a successful build.
+
+## JavaScriptCore Multi-Thread Crash
+
+As a known issue, when you see this kind of crash from JavaScriptCore.framework(WTF) like below;
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/ios/javascript-core-multi-thread-crash.png"></Screenshot>
+
+Please check the last plugin call that you trigger and try to force from "dispatch_async(dispatch_get_main_queue(), ^{}"
+
+As an example;
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/ios/crash-1.png"></Screenshot>
+
+<Screenshot url="https://cdn.smartface.io/internal-docs/ios/crash-2.png"></Screenshot>
+
+## UI Plugins
+
+If you are exposing UIView or UIView subclass as a plugin to JavaScript, you need to provide your plugin with layoutFrame property and with initWithDictionary:(NSDictionary\*)layout function because both of these will be used by Smartface to add your plugin view in the run-time.
+
+You can follow the following in Objective-C:
+
+```objectivec
+@protocol UIPluginExport<JSExport> //1. Define your export protocol
+
+@property (nonatomic, strong) NSDictionary *layoutFrame; //2. Provide layoutFrame
+- (instancetype)initWithDictionary:(NSDictionary*)layoutFrame; //3. Provide initWithDictionary
+
+@end
+
+@interface UIPlugin : UIView<UIPluginExport>
+
+@end
+
+@implementation UIPlugin
+
+- (instancetype)initWithDictionary:(NSDictionary*)layoutFrame {
+
+    self = [super init];
+    if (self) {
+        self.layoutFrame = layoutFrame;
+    }
+    return self;
+
+}
+
+@end
+```
+
+and follow the following in JavaScript:
+
+```javascript
+var uiPlugin = new UIPlugin({
+  left: "10%",
+  top: "15%",
+  width: 300,
+  height: 300,
+}); //this will invoke initWithDictionary function in your plugin
+function page_onShow() {
+  this.add(uiPlugin); //this will use layoutFrame that you've already set in initWithDictionary
+}
+```
+
+## More About Plugins
+
+- You can pass all data types supported by JavaScriptCore framework from/to Objective-C to/from JavaScript.
+- If you write a function in Objective-C for your plugin as follows:
+
+```objectivec
+-(void)doSomethingWithNumber:(int)num andWithString:(NSString*)str;
+```
+
+You can call it in your JavaScript as follows:
+
+```javascript
+pluginObject.doSomethingWithNumberAndWithString(1, "str");
+```
+
+If you write a property in Objective-C for your plugin as follows:
+
+```objectivec
+@property (nonatomic, strong) NSString *str;
+```
+
+You can access it in your JavaScript as follows:
+
+```javascript
+pluginObject.str;
+```
+
+- If you want to present a view controller from your plugin, you can use "SMFNavigationController" as follows:
+
+```objectivec
+#include <iOSPlayer/inc/SMFNavigationController.h>
+-(void)presentViewController {
+    UIViewController *viewController = //Your view controller
+    UIViewController *activeController = [SMFNavigationController SMFGetNavigationController].topViewController;
+    [activeController presentViewController:viewController animated:YES completion:nil];
+}
+```
+
+- If you want to call back JavaScript from Objective-C for delegation, you have two options.
+- Option 1: use "[JSContext currentThis]" in Objective-C as follows:
+
+In JavaScript:
+
+```javascript
+function page1_btn_onPressed(e) {
+  pluginObject.pluginDoSomething();
+  pluginObject.onFinish = function (parameter) {
+    //Do something in JavaScript when plugin finishes
+  };
+}
+```
+
+In Objective-C
+
+```objectivec
+- (void)pluginDoSomething {
+    //Do something in Objective-C...
+    [[JSContext currentThis][@"onFinish"]callWithArguments:@[@"Parameter"]]; //Call back JavaScript
+}
+```
+
+:::note
+Note that "[JSContext currentThis]" is the current value of the JavaScript this keyword, and it is null if not within native code called from JavaScript.
+:::
+
+- Option 2: Pass call back function from JavaScript, then use it wherever you want from Objective-C, as follows:
+
+In JavaScript
+
+```javascript
+function page1_btn_onPressed(e) {
+  pluginObject.pluginDoSomething(function (parameter) {
+    //Do something in JavaScript when plugin finishes
+  });
+}
+```
+
+In Objective-C
+
+```objectivec
+- (void)pluginDoSomething:(JSValue*)onFinishCallback {
+    //Do something in Objective-C...
+    //...
+
+    self.onFinishCallback = onFinishCallback;
+    //then use self.onFinishCallback wherever you want
+    [self.onFinishCallback callWithArguments:@[@"Parameters"]];
+}
+```
+
+## Limitations
+
+- As mentioned, "[JSContext currentThis]" is null if not within native code called from JavaScript.
+- It is mandatory to use all iVars as properties, because for now when you try to access iVars in a plugin function called from JavaScript, crash might happen in JavaScriptCore framework.
+- Custom plugins are not supported in  Smartface App (run-on-device emulator) yet. We're shipping only plugins maintained by Smartface itself with Smartface App.
+

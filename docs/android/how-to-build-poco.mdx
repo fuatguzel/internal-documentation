@@ -1,0 +1,50 @@
+# How to build POCO
+
+Currently, Framework-android project uses [POCO](https://github.com/pocoproject/poco) pre-built static libraries as dependency. These below steps describes how we used to built these dependencies and give you an info of current configurations. You can either choose to build manually or shell script.
+
+
+## Build POCO By Helper Script 
+
+To build POCO static libs, we have written a shell scripts to make the process easer. Follow the below steps; 
+
+1. Clone the POCO repository
+2. Checkout the poco-1.7.2-release tag 
+3. Install OpenSSL via third party package installer like brew ( eg. brew install openssl )
+4. POCO has built configs for cross compilations but not included 64 bits. So we have to specify the compiler and linker path for 64 bit compilation. To do that see build/config/Android file and modify the arch configurations;
+
+```makefile title="Android"
+ifeq ($(ANDROID_ABI),arm64-v8a)
+TOOL = aarch64-linux-android
+ARCHFLAGS = -march=armv8-a -Werror=pointer-to-int-cast -Werror=int-to-pointer-cast -Werror=implicit-function-declaration
+else
+ifeq ($(ANDROID_ABI),x86_64)
+TOOL = x86_64-linux-android
+ARCHFLAGS = -march=x86-64 -msse4.2 -mpopcnt -m64 -mtune=intel -Werror=pointer-to-int-cast -Werror=int-to-pointer-cast -Werror=implicit-function-declaration
+else
+$(error Invalid ABI specified in ANDROID_ABI)
+endif
+endif
+```
+
+5. Run [poco build sh](https://bitbucket.org/smartface-team/build-tools/src/master/) with proper arguments
+
+
+## Build POCO Manually
+
+1. Follow the above steps up to 5.
+2. Download ndk r12b
+3. [Build Andorid Ndk standalone toolchain for all arches](https://pocoproject.org/docs/99300-AndroidPlatformNotes.html) (arm64, arm , x86 & x86_64)
+4. Export built standalone toolchain bin files (eg.export PATH=$PATH:$HOME/my-android-toolchain/bin)
+5. POCO repo has **configure** file which configures what to build 
+   - Specify what to omit and build except it. To build poco's ssl libs, have to pass headers and pre-built libraries   
+   ```makefile
+   $  ./configure --config=Android --no-samples --no-tests --omit=Data/ODBC,Data/MySQL --include-path=/usr/local/opt/openssl/include --library-path=/usr/local/opt/openssl/lib
+   ```
+6. To build the POCO C++ Libraries (static) on a Linux or Mac OS X host:
+   - Build for all arches by chaning ANDROID_ABi (armeabi, , armeabi-v7a, arm64-v8a , x86 & x86_64) eg.
+   ```makefile
+   make -s -j4 ANDROID_ABI=armeabi
+   ```   
+   
+7. Well done you have built it. Obtain necessary static libs from YOURPOCOPATH/lib/Android
+   
