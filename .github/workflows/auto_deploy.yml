@@ -24,7 +24,7 @@ jobs:
         env:
           DEPLOY_KEY: ${{ secrets.SERVER_SSH_KEY }}
           ARGS: "-a -p --delete"
-          SERVER_PORT: 23
+          SERVER_PORT: 22
           FOLDER: "./build/"
           SERVER_IP: ${{ secrets.SERVER_IP }}
           USERNAME: ${{ secrets.SERVER_USER }}
